@@ -165,7 +165,7 @@ require_once '../includes/header.php';
         </div>
 
         <button type="submit" class="btn btn-primary btn-lg"
-                onclick="return confirm('Submit your application? An invoice will be sent to your MUST email.')">
+                onclick="return validateForm(event)">
           🏠 Submit Application →
         </button>
       </form>
@@ -174,10 +174,64 @@ require_once '../includes/header.php';
 </div>
 
 <script>
+// Update email based on registration number
 function updateEmail(val) {
     const clean = val.replace(/[^a-zA-Z0-9\/\-]/g,'').toLowerCase();
     document.getElementById('emailDisplay').value = (clean || 'regnumber') + '@must.ac.mw';
 }
+
+// Validate form before submission
+function validateForm(event) {
+    const regNumber = document.querySelector('input[name="reg_number"]').value.trim();
+    const fullName = document.querySelector('input[name="full_name"]').value.trim();
+    const yearOfStudy = document.querySelector('select[name="year_of_study"]').value;
+    const gender = document.querySelector('select[name="gender"]').value;
+
+    // Check if all required fields are filled
+    if (!regNumber) {
+        alert('⚠️ Warning: Please enter your registration number');
+        return false;
+    }
+
+    if (!fullName) {
+        alert('⚠️ Warning: Please enter your full name');
+        return false;
+    }
+
+    if (!yearOfStudy) {
+        alert('⚠️ Warning: Please select your year of study');
+        return false;
+    }
+
+    if (!gender) {
+        alert('⚠️ Warning: Please select your gender');
+        return false;
+    }
+
+    // Confirm submission with user
+    const confirmMsg = `✅ Ready to apply?\n\nReg Number: ${regNumber}\nName: ${fullName}\nYear: ${yearOfStudy}\nGender: ${gender}\n\nAn invoice will be sent to your email.`;
+    return confirm(confirmMsg);
+}
+
+// Show info alert when page loads
+window.addEventListener('load', function() {
+    console.log('Application form ready');
+});
+
+// Show warning if user tries to leave with unsaved changes
+let formModified = false;
+document.querySelectorAll('form input, form textarea, form select').forEach(field => {
+    field.addEventListener('change', function() {
+        formModified = true;
+    });
+});
+
+window.addEventListener('beforeunload', function(e) {
+    if (formModified && !document.querySelector('form').getAttribute('data-submitted')) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
 </script>
 
 <?php endif; ?>
