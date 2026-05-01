@@ -10,7 +10,6 @@ if (isLoggedIn()) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $loginAs = clean($_POST['login_as'] ?? 'student');
     $identifier = clean($_POST['identifier'] ?? '');
     $password = $_POST['password'] ?? '';
 
@@ -19,11 +18,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $db = getDB();
         
-        // Find user by reg_number or email, filtered by role
+        // Find user by reg_number, email, or username
         $stmt = $db->prepare(
-            "SELECT * FROM users WHERE (reg_number = ? OR email = ?) AND role = ? LIMIT 1"
+            "SELECT * FROM users WHERE (reg_number = ? OR email = ? OR username = ?) LIMIT 1"
         );
-        $stmt->execute([$identifier, $identifier, $loginAs]);
+        $stmt->execute([$identifier, $identifier, $identifier]);
         $user = $stmt->fetch();
 
         if ($user && password_verify($password, $user['password'])) {
@@ -37,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: " . SITE_URL . "/{$user['role']}/dashboard.php");
             exit;
         } else {
-            $error = 'Invalid credentials. Please check your ' . ($loginAs === 'student' ? 'registration number' : 'username') . ' and password.';
+            $error = 'Invalid credentials. Please check your username, email, registration number, or password.';
         }
     }
 }
@@ -47,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login - MUST Hostel Booking System</title>
+<title>Login - MUST Hostel  Allocation</title>
 <link rel="stylesheet" href="assets/css/style.css">
 <style>
 .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: #aaa; font-size: 12px; }
@@ -73,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="feature-item"><div class="fi">🏠</div> Random & Manual Room Allocation</div>
         <div class="feature-item"><div class="fi">📧</div> Email Notifications & Receipts</div>
         <div class="feature-item"><div class="fi">💳</div> Invoice & Payment Tracking</div>
-        <div class="feature-item"><div class="fi">♿</div> Special Needs Support</div>
+        <div class="feature-item"><div class="fi"></div> Special Needs Support</div>
       </div>
     </div>
   </div>
@@ -87,33 +86,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="alert alert-danger">❌ <?= htmlspecialchars($error) ?></div>
       <?php endif; ?>
       <?php if (isset($_GET['registered'])): ?>
-      <div class="alert alert-success">✅ Account created! You can now log in.</div>
+      <div class="alert alert-success">Account created! You can now log in.</div>
       <?php endif; ?>
       <?php if (isset($_GET['error']) && $_GET['error'] === 'unauthorized'): ?>
-      <div class="alert alert-warning">⚠️ You don't have permission to access that page.</div>
+      <div class="alert alert-warning"> You don't have permission to access that page.</div>
       <?php endif; ?>
 
       <form method="POST" id="loginForm">
         <div class="form-group">
-          <label>I am a:</label>
-          <div class="role-selector">
-            <div class="role-btn active" data-role="student" onclick="selectRole('student', this)">
-              <span class="role-icon">🎓</span>Student
-            </div>
-            <div class="role-btn" data-role="operator" onclick="selectRole('operator', this)">
-              <span class="role-icon">👨‍💼</span>Operator
-            </div>
-            <div class="role-btn" data-role="admin" onclick="selectRole('admin', this)">
-              <span class="role-icon">🔑</span>Admin
-            </div>
-          </div>
-          <input type="hidden" name="login_as" id="login_as" value="student">
-        </div>
-
-        <div class="form-group">
-          <label id="identifierLabel">Registration Number</label>
+          <label>Username / Email / Registration Number</label>
           <input type="text" name="identifier" id="identifier"
-                 placeholder="e.g. MU/STU/2024/001" required
+                 placeholder="Enter your username, email, or registration number" required
                  value="<?= htmlspecialchars($_POST['identifier'] ?? '') ?>">
         </div>
 
@@ -132,30 +115,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div class="register-link">
         New student? <a href="register.php">Create your account</a>
       </div>
-
-      <div style="margin-top:24px;padding:14px;background:#f8fafc;border-radius:8px;font-size:12px;color:#64748b">
-        <strong>Demo Credentials:</strong><br>
-        Admin: <code>ADMIN001</code> / <code>password</code><br>
-        Operator: <code>OPR001</code> / <code>password</code>
-      </div>
     </div>
   </div>
 </div>
 
-<script>
-function selectRole(role, el) {
-    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    document.getElementById('login_as').value = role;
-    document.getElementById('identifierLabel').textContent = 
-        role === 'student' ? 'Registration Number' : 'Username / Email';
-    document.getElementById('identifier').placeholder = 
-        role === 'student' ? 'e.g. MU/STU/2024/001' : 'Enter your username';
-}
-
-// Pre-select role if form was submitted
-const preRole = "<?= htmlspecialchars($_POST['login_as'] ?? 'student') ?>";
-document.querySelector('[data-role="' + preRole + '"]')?.click();
-</script>
 </body>
 </html>
