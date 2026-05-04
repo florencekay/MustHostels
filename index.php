@@ -1,15 +1,23 @@
 <?php
+// Load configuration, database connection, and session helpers.
 require_once 'includes/config.php';
 
+// Redirect logged-in users directly to their role-specific dashboard.
 if (isLoggedIn()) {
     $role = $_SESSION['role'];
     header("Location: " . SITE_URL . "/{$role}/dashboard.php");
     exit;
 }
 
+// Default error message container for form validation and authentication failures.
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+<<<<<<< HEAD
+    // Get the submitted identifier and password from the login form.
+    // Identifier may be username, email, or registration number.
+=======
+>>>>>>> 950300031f0be6e8acfcf1367e97d5baf197f5b0
     $identifier = clean($_POST['identifier'] ?? '');
     $password = $_POST['password'] ?? '';
 
@@ -18,13 +26,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $db = getDB();
         
+<<<<<<< HEAD
+        // Look up a matching user by reg_number, email, or username.
+        // This allows a single login form to support all roles.
+=======
         // Find user by reg_number, email, or username
+>>>>>>> 950300031f0be6e8acfcf1367e97d5baf197f5b0
         $stmt = $db->prepare(
             "SELECT * FROM users WHERE (reg_number = ? OR email = ? OR username = ?) LIMIT 1"
         );
         $stmt->execute([$identifier, $identifier, $identifier]);
         $user = $stmt->fetch();
 
+        // Verify password and populate session values on success.
         if ($user && password_verify($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
@@ -33,6 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['email'] = $user['email'];
             $_SESSION['gender'] = $user['gender'];
 
+            // Redirect the authenticated user to the correct dashboard.
             header("Location: " . SITE_URL . "/{$user['role']}/dashboard.php");
             exit;
         } else {
@@ -83,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <p>Sign in to your account to continue</p>
 
       <?php if ($error): ?>
-      <div class="alert alert-danger">❌ <?= htmlspecialchars($error) ?></div>
+      <div class="alert alert-danger"> <?= htmlspecialchars($error) ?></div>
       <?php endif; ?>
       <?php if (isset($_GET['registered'])): ?>
       <div class="alert alert-success">Account created! You can now log in.</div>
