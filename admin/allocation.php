@@ -8,9 +8,12 @@ $pageSubtitle = 'All allocated students and their rooms';
 $search = clean($_GET['search'] ?? '');
 $where = "WHERE 1=1";
 $params = [];
+$bindTypes = '';
 if ($search) {
     $where .= " AND (al.reg_number LIKE ? OR a.full_name LIKE ?)";
-    $params[] = "%$search%"; $params[] = "%$search%";
+    $params[] = "%$search%";
+    $params[] = "%$search%";
+    $bindTypes = 'ss';
 }
 
 $stmt = $db->prepare(
@@ -25,8 +28,12 @@ $stmt = $db->prepare(
      $where
      ORDER BY al.allocated_at DESC"
 );
-$stmt->execute($params);
-$allocations = $stmt->fetchAll();
+if ($bindTypes) {
+    $stmt->bind_param($bindTypes, ...$params);
+}
+$stmt->execute();
+$result = $stmt->get_result();
+$allocations = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
 require_once '../includes/header.php';
 ?>
