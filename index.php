@@ -13,8 +13,11 @@ if (isLoggedIn()) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+<<<<<<< HEAD
     // Get the submitted identifier and password from the login form.
     // Identifier may be username, email, or registration number.
+=======
+>>>>>>> 950300031f0be6e8acfcf1367e97d5baf197f5b0
     $identifier = clean($_POST['identifier'] ?? '');
     $password = $_POST['password'] ?? '';
 
@@ -23,8 +26,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $db = getDB();
         
+<<<<<<< HEAD
         // Look up a matching user by reg_number, email, or username.
         // This allows a single login form to support all roles.
+=======
+        // Find user by reg_number, email, or username
+>>>>>>> 950300031f0be6e8acfcf1367e97d5baf197f5b0
         $stmt = $db->prepare(
             "SELECT * FROM users WHERE (reg_number = ? OR email = ? OR username = ?) LIMIT 1"
         );
